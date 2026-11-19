@@ -3,184 +3,261 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#1f3b2c">
+<meta name="theme-color" content="#0f0a06">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Cacho</title>
 <style>
   :root {
-    --mesa: #1f3b2c;
-    --mesa-oscura: #142a1f;
-    --cuero: #6b3a1f;
-    --cuero-claro: #8c5230;
-    --cuero-oscuro: #3f2010;
-    --dado: #fbf7ee;
-    --punto: #1b1b1b;
+    --pano: #1d5a3a;
+    --pano-oscuro: #0c2a1b;
+    --oro: #d8b46a;
+    --oro-oscuro: #9c7a36;
+    --texto: #f4efe3;
+    --texto-suave: #c9c2b2;
     --as: #b3261e;
-    --texto: #f3efe4;
-    --texto-suave: #b9c4bb;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; }
   body {
-    background: radial-gradient(ellipse at 50% 45%, var(--mesa) 0%, var(--mesa-oscura) 100%);
+    background: #0f0a06;
     color: var(--texto);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    overflow: hidden;
+    overflow: hidden; overscroll-behavior: none;
     user-select: none; -webkit-user-select: none;
     touch-action: none;
   }
-  .app {
-    height: 100%;
-    display: flex; flex-direction: column;
-    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+
+  /* ---------- Mesa ---------- */
+  .mesa {
+    position: fixed; inset: 0; overflow: hidden;
+    background:
+      radial-gradient(ellipse 90% 55% at 50% 78%, #2a7a50 0%, var(--pano) 40%, var(--pano-oscuro) 100%);
+  }
+  .mesa::after { /* textura de paño */
+    content: ""; position: absolute; inset: 0; opacity: .18; pointer-events: none;
+    background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.25) 0 1px, transparent 1px 3px);
   }
 
-  /* Barra superior: cantidad de dados */
-  .barra { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .titulo { font-size: 22px; font-weight: 800; letter-spacing: .5px; }
-  .contador { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--texto-suave); }
-  .contador button {
-    width: 38px; height: 38px; border-radius: 50%;
-    border: 1.5px solid rgba(255,255,255,.25); background: rgba(0,0,0,.2);
-    color: var(--texto); font-size: 22px; line-height: 1; cursor: pointer;
-  }
-  .contador button:disabled { opacity: .3; }
-  .contador b { color: var(--texto); font-size: 20px; min-width: 14px; text-align: center; }
-
-  /* Mesa */
-  .mesa { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; }
+  /* ---------- Dados ---------- */
   .dados {
-    position: absolute; left: 50%; top: 50%;
-    width: min(78vw, 330px); height: min(78vw, 330px);
-    transform: translate(-50%, -50%);
+    position: absolute; left: 50%; bottom: 9%;
+    width: min(92vw, 420px); height: min(72vw, 330px);
+    transform: translateX(-50%);
+    z-index: 1;
   }
   .dado {
-    position: absolute; width: 27%; aspect-ratio: 1;
-    background: var(--dado); border-radius: 18%;
-    box-shadow: inset 0 -4px 0 rgba(0,0,0,.12), 0 6px 12px rgba(0,0,0,.35);
-    transition: transform .35s cubic-bezier(.2,.9,.3,1.3);
+    position: absolute; width: 28%; aspect-ratio: 1;
+    border-radius: 22%;
+    background: linear-gradient(150deg, #ffffff 0%, #f1ede5 45%, #d6cfc2 100%);
+    box-shadow:
+      inset -5px -7px 10px rgba(0,0,0,.20),
+      inset 4px 4px 7px rgba(255,255,255,.95),
+      0 3px 0 #b9b1a2,
+      0 14px 18px rgba(0,0,0,.45);
   }
-  .dado svg { display: block; }
+  .dado svg { display: block; width: 100%; height: 100%; }
 
-  /* El cacho */
+  /* ---------- Cacho (vaso) ---------- */
   .cacho {
-    position: absolute; left: 50%; top: 50%;
-    width: min(88vw, 370px); height: min(92vw, 390px);
-    transform: translate(-50%, -50%);
-    transition: transform .45s cubic-bezier(.2,.8,.2,1);
-    cursor: grab; z-index: 2;
-    filter: drop-shadow(0 18px 22px rgba(0,0,0,.5));
+    position: absolute; left: -6%; right: -6%; top: -30%; bottom: 3%;
+    z-index: 2; cursor: grab;
+    transition: transform .38s cubic-bezier(.3,1.25,.5,1);
+    will-change: transform;
   }
-  .cacho svg { width: 100%; height: 100%; display: block; }
-  .cacho.levantado { transform: translate(-50%, -128%) scale(.9); }
-  .cacho.destapado { transform: translate(-50%, -150%) scale(.75); opacity: 0; pointer-events: none; transition: transform .5s, opacity .4s .1s; }
-  .cacho.agitando { animation: agitar .09s linear infinite alternate; }
+  .cacho.arrastrando { transition: none; cursor: grabbing; }
+  .cacho.fuera { transform: translateY(-115%) !important; transition: transform .55s cubic-bezier(.5,0,.3,1); }
+  .cacho.agitando .cuerpo { animation: agitar .085s linear infinite alternate; }
   @keyframes agitar {
-    from { transform: translate(-53%, -50%) rotate(-4deg); }
-    to   { transform: translate(-47%, -51%) rotate(4deg); }
+    from { transform: translate(-1.5%, 0) rotate(-1.4deg); }
+    to   { transform: translate(1.5%, -.6%) rotate(1.4deg); }
+  }
+  .cuerpo { position: absolute; inset: 0; }
+  .cuerpo svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .sombra {
+    position: absolute; left: 4%; right: 4%; bottom: -3%; height: 9%;
+    background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,.65), transparent 70%);
+    z-index: -1;
   }
 
-  .ayuda {
-    text-align: center; font-size: 15px; color: var(--texto-suave);
-    min-height: 44px; display: flex; align-items: center; justify-content: center;
-    padding: 0 8px;
+  /* Placa en el centro del vaso */
+  .placa {
+    position: absolute; left: 50%; top: 60%; transform: translate(-50%, -50%);
+    min-width: 190px; padding: 14px 26px; border-radius: 16px;
+    background: linear-gradient(180deg, #e9cd8c 0%, var(--oro) 45%, var(--oro-oscuro) 100%);
+    color: #2b1b07; text-align: center;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.55), inset 0 -3px 0 rgba(0,0,0,.25), 0 6px 14px rgba(0,0,0,.5);
+    border: 1px solid #6e5222;
   }
-  .resumen { text-align: center; font-size: 15px; color: var(--texto); min-height: 22px; }
-  .resumen span { color: var(--as); font-weight: 700; }
+  .placa b { display: block; font-size: 26px; letter-spacing: 3px; text-transform: uppercase; }
+  .placa small { display: block; font-size: 13px; font-weight: 600; opacity: .8; margin-top: 2px; }
+  .flecha { display: block; font-size: 22px; line-height: 1; margin-bottom: 2px; animation: subir 1.4s ease-in-out infinite; }
+  @keyframes subir { 0%,100% { transform: translateY(3px); opacity: .5; } 50% { transform: translateY(-4px); opacity: 1; } }
 
-  .botones { display: flex; gap: 12px; }
-  .botones button {
-    flex: 1; height: 58px; border-radius: 16px; border: none;
-    font-size: 18px; font-weight: 700; cursor: pointer;
+  /* ---------- Barra superior ---------- */
+  .barra {
+    position: fixed; left: 0; right: 0; top: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: max(14px, env(safe-area-inset-top)) 16px 0;
+    pointer-events: none;
   }
-  .principal { background: #e9c46a; color: #2a1d08; box-shadow: 0 4px 0 #a7843a; }
-  .principal:active { transform: translateY(3px); box-shadow: 0 1px 0 #a7843a; }
-  .secundario { background: rgba(0,0,0,.28); color: var(--texto); border: 1.5px solid rgba(255,255,255,.2) !important; }
-  .botones button:disabled { opacity: .35; }
+  .barra > * { pointer-events: auto; }
+  .pastilla, .icono {
+    height: 44px; border-radius: 22px; border: 1px solid rgba(255,255,255,.18);
+    background: rgba(10,6,3,.55); color: var(--texto);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .pastilla { padding: 0 14px; display: flex; align-items: center; gap: 6px; }
+  .pastilla .res { font-size: 12px; color: #1b3a22; background: #9fd4a8; border-radius: 10px; padding: 2px 7px; }
+  .pastilla .res:empty { display: none; }
+  .icono { width: 44px; display: grid; place-items: center; padding: 0; }
+  .destapar {
+    height: 48px; padding: 0 22px; border-radius: 14px; border: 1px solid #6e5222;
+    background: linear-gradient(180deg, #e9cd8c 0%, var(--oro) 45%, var(--oro-oscuro) 100%);
+    color: #2b1b07; font-size: 16px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 4px 10px rgba(0,0,0,.45);
+    cursor: pointer;
+  }
+  .destapar:disabled { filter: grayscale(.8) brightness(.55); }
 
-  .opciones { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .chip {
-    height: 34px; padding: 0 14px; border-radius: 17px;
-    border: 1.5px solid rgba(255,255,255,.22); background: rgba(0,0,0,.2);
-    color: var(--texto); font-size: 14px; font-weight: 600; cursor: pointer;
+  /* Resumen de lo que tienes */
+  .resumen {
+    position: fixed; left: 50%; z-index: 4;
+    bottom: calc(9% + min(72vw, 330px) + 10px);
+    transform: translateX(-50%);
+    padding: 8px 14px; border-radius: 14px;
+    width: max-content; max-width: calc(100vw - 32px); text-align: center; line-height: 1.4;
+    background: rgba(10,6,3,.72); font-size: 15px; font-weight: 600;
+    opacity: 0; transition: opacity .2s; pointer-events: none;
   }
-  .chip:disabled { opacity: .35; }
-  .chip[aria-pressed="true"] { background: #e9c46a; color: #2a1d08; border-color: #e9c46a; }
-  .reserva {
-    margin-left: auto; font-size: 13px; font-weight: 700; color: #2a1d08;
-    background: #9fd4a8; border-radius: 12px; padding: 4px 10px;
+  .resumen.visible { opacity: 1; }
+  .resumen span { color: #ff8a80; font-weight: 800; }
+  .resumen em { font-style: normal; font-weight: 800; color: var(--oro); }
+
+  /* ---------- Menú ---------- */
+  .velo { position: fixed; inset: 0; z-index: 8; background: rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .velo.abierto { opacity: 1; pointer-events: auto; }
+  .menu {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 9;
+    background: #1b130c; border-top: 1px solid rgba(255,255,255,.12);
+    border-radius: 22px 22px 0 0;
+    padding: 18px 16px max(18px, env(safe-area-inset-bottom));
+    transform: translateY(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
+    max-width: 520px; margin: 0 auto;
   }
-  .reserva:empty { display: none; }
-  .resumen em { font-style: normal; font-weight: 800; color: #e9c46a; }
-  .eliminado .chip { margin-top: 8px; }
+  .menu.abierto { transform: none; }
+  .menu h2 { margin: 0 0 4px; font-size: 18px; }
+  .menu p { margin: 0 0 14px; font-size: 14px; color: var(--texto-suave); line-height: 1.4; }
+  .contador { display: flex; align-items: center; justify-content: center; gap: 22px; margin: 6px 0 4px; }
+  .contador button {
+    width: 56px; height: 56px; border-radius: 50%; border: 1px solid rgba(255,255,255,.2);
+    background: rgba(255,255,255,.06); color: var(--texto); font-size: 28px; cursor: pointer;
+  }
+  .contador button:disabled { opacity: .3; }
+  .contador .n { font-size: 44px; font-weight: 800; min-width: 40px; text-align: center; }
+  .nota { text-align: center; font-size: 13px; color: var(--texto-suave); min-height: 18px; margin-bottom: 14px; }
+  .acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .acciones button {
+    height: 50px; border-radius: 14px; border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.06); color: var(--texto); font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .acciones button[aria-pressed="true"] { background: var(--oro); color: #2b1b07; border-color: var(--oro); }
+  .acciones .ancho { grid-column: 1 / -1; }
+
+  /* Sin dados */
   .eliminado {
-    position: absolute; inset: 0; display: none; flex-direction: column;
-    align-items: center; justify-content: center; text-align: center; gap: 8px;
+    position: fixed; inset: 0; z-index: 3; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 16px;
   }
   .eliminado.visible { display: flex; }
-  .eliminado big { font-size: 28px; font-weight: 800; }
+  .eliminado big { font-size: 30px; font-weight: 800; }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="barra">
-    <div class="titulo">Cacho</div>
-    <div class="contador">
-      <button id="menos" aria-label="Quitar un dado">−</button>
-      <span><b id="num">5</b> dados</span>
-      <button id="mas" aria-label="Agregar un dado">+</button>
-    </div>
-  </div>
-  <div class="opciones">
-    <button class="chip" id="inicial">Tirada inicial</button>
-    <button class="chip" id="ciega" aria-pressed="false">Ronda ciega</button>
-    <span class="reserva" id="reserva"></span>
-  </div>
+<div class="mesa" id="mesa">
+  <div class="dados" id="dados"></div>
 
-  <div class="mesa" id="mesa">
-    <div class="dados" id="dados"></div>
-    <div class="eliminado" id="eliminado">
-      <big>Sin dados</big>
-      <span>Quedaste eliminado.</span>
-      <button class="chip" id="nueva">Nueva partida</button>
-    </div>
-    <div class="cacho" id="cacho">
-      <svg viewBox="0 0 200 210" aria-hidden="true">
+  <div class="cacho" id="cacho">
+    <div class="cuerpo">
+      <svg viewBox="0 0 400 1000" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <linearGradient id="cuero" x1="0" x2="1">
-            <stop offset="0" stop-color="#3f2010"/>
-            <stop offset=".35" stop-color="#8c5230"/>
-            <stop offset=".55" stop-color="#7a4426"/>
-            <stop offset="1" stop-color="#3a1d0e"/>
+            <stop offset="0" stop-color="#0b0603"/>
+            <stop offset=".18" stop-color="#2a170b"/>
+            <stop offset=".38" stop-color="#4a2c17"/>
+            <stop offset=".52" stop-color="#35200f"/>
+            <stop offset=".85" stop-color="#170c05"/>
+            <stop offset="1" stop-color="#070302"/>
           </linearGradient>
-          <linearGradient id="borde" x1="0" x2="1">
-            <stop offset="0" stop-color="#2b150a"/>
-            <stop offset=".4" stop-color="#5c3118"/>
-            <stop offset="1" stop-color="#24110a"/>
+          <linearGradient id="labio" x1="0" x2="1">
+            <stop offset="0" stop-color="#070302"/>
+            <stop offset=".35" stop-color="#3b2312"/>
+            <stop offset=".6" stop-color="#26160a"/>
+            <stop offset="1" stop-color="#050201"/>
+          </linearGradient>
+          <linearGradient id="vertical" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#000" stop-opacity=".55"/>
+            <stop offset=".35" stop-color="#000" stop-opacity="0"/>
+            <stop offset=".85" stop-color="#000" stop-opacity="0"/>
+            <stop offset="1" stop-color="#000" stop-opacity=".35"/>
+          </linearGradient>
+          <linearGradient id="brillo" x1="0" x2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+            <stop offset=".5" stop-color="#fff" stop-opacity=".10"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
           </linearGradient>
         </defs>
-        <!-- cuerpo (vaso boca abajo) -->
-        <path d="M45 18 Q100 6 155 18 L182 182 Q100 200 18 182 Z" fill="url(#cuero)"/>
-        <!-- fondo del vaso arriba -->
-        <ellipse cx="100" cy="18" rx="55" ry="10" fill="#4a2512"/>
-        <ellipse cx="100" cy="17" rx="47" ry="7" fill="#5e321a"/>
+        <!-- cuerpo -->
+        <path d="M0 0 H400 V900 A200 80 0 0 1 0 900 Z" fill="url(#cuero)"/>
+        <path d="M0 0 H400 V900 A200 80 0 0 1 0 900 Z" fill="url(#vertical)"/>
+        <!-- franja de brillo -->
+        <rect x="105" y="0" width="70" height="960" fill="url(#brillo)"/>
         <!-- costuras -->
-        <path d="M40 52 Q100 40 160 52" fill="none" stroke="#d9b77f" stroke-width="2" stroke-dasharray="6 5" opacity=".7"/>
-        <path d="M26 150 Q100 165 174 150" fill="none" stroke="#d9b77f" stroke-width="2" stroke-dasharray="6 5" opacity=".7"/>
-        <!-- borde de la boca -->
-        <path d="M18 182 Q100 200 182 182 L184 192 Q100 212 16 192 Z" fill="url(#borde)"/>
-        <!-- brillo -->
-        <path d="M70 30 Q62 100 55 175" stroke="rgba(255,255,255,.13)" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M0 300 A200 60 0 0 0 400 300" fill="none" stroke="#d8b46a" stroke-width="3" stroke-dasharray="14 10" opacity=".55" vector-effect="non-scaling-stroke"/>
+        <path d="M0 820 A200 75 0 0 0 400 820" fill="none" stroke="#d8b46a" stroke-width="3" stroke-dasharray="14 10" opacity=".7" vector-effect="non-scaling-stroke"/>
+        <!-- labio del vaso -->
+        <path d="M0 862 A200 80 0 0 0 400 862 V900 A200 80 0 0 1 0 900 Z" fill="url(#labio)"/>
+        <path d="M0 900 A200 80 0 0 0 400 900" fill="none" stroke="#000" stroke-width="2" opacity=".7" vector-effect="non-scaling-stroke"/>
+        <path d="M2 864 A198 78 0 0 0 398 864" fill="none" stroke="#7a5332" stroke-width="1.5" opacity=".6" vector-effect="non-scaling-stroke"/>
       </svg>
+      <div class="sombra"></div>
+      <div class="placa" id="placa"></div>
     </div>
   </div>
+</div>
 
-  <div class="resumen" id="resumen"></div>
-  <div class="ayuda" id="ayuda">Toca «Agitar» o sacude el celular</div>
-  <div class="botones">
-    <button class="secundario" id="destapar" disabled>Destapar</button>
-    <button class="principal" id="agitar">Agitar</button>
+<div class="resumen" id="resumen"></div>
+
+<div class="eliminado" id="eliminado">
+  <big>Sin dados</big>
+  <span>Quedaste eliminado.</span>
+</div>
+
+<div class="barra">
+  <button class="pastilla" id="abrirMenu" aria-label="Tus dados y opciones"><span id="numBarra">5</span> dados <span class="res" id="resBarra"></span></button>
+  <button class="destapar" id="destapar" disabled>Destapar</button>
+  <button class="icono" id="abrirMenu2" aria-label="Opciones">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+</div>
+
+<div class="velo" id="velo"></div>
+<div class="menu" id="menu" role="dialog" aria-label="Opciones">
+  <h2>Tus dados</h2>
+  <p>Toca − cuando pierdas un dado y + cuando caces bien. Con 5 dados, cazar bien te da un dado de reserva.</p>
+  <div class="contador">
+    <button id="menos" aria-label="Perder un dado">−</button>
+    <span class="n" id="num">5</span>
+    <button id="mas" aria-label="Ganar un dado">+</button>
+  </div>
+  <div class="nota" id="nota"></div>
+  <div class="acciones">
+    <button id="inicial">Tirada inicial</button>
+    <button id="ciega" aria-pressed="false">Ronda ciega</button>
+    <button id="nueva">Nueva partida</button>
+    <button id="cerrar">Listo</button>
   </div>
 </div>
 
@@ -188,20 +265,21 @@
 (() => {
   const MAX = 5;
   const $ = id => document.getElementById(id);
-  const cacho = $('cacho'), dadosEl = $('dados'), ayuda = $('ayuda'), resumen = $('resumen');
-  const btnAgitar = $('agitar'), btnDestapar = $('destapar');
-  const btnMenos = $('menos'), btnMas = $('mas'), numEl = $('num'), eliminado = $('eliminado');
-  const btnInicial = $('inicial'), btnCiega = $('ciega'), reservaEl = $('reserva'), btnNueva = $('nueva');
+  const mesa = $('mesa'), cacho = $('cacho'), dadosEl = $('dados'), placa = $('placa'), resumen = $('resumen');
+  const btnDestapar = $('destapar'), eliminado = $('eliminado');
+  const menu = $('menu'), velo = $('velo');
+  const btnMenos = $('menos'), btnMas = $('mas'), numEl = $('num'), nota = $('nota');
+  const btnInicial = $('inicial'), btnCiega = $('ciega'), btnNueva = $('nueva');
 
-  // Puntos de cada cara en una cuadrícula 3x3 (índices 0..8)
   const CARAS = { 1:[4], 2:[2,6], 3:[2,4,6], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
   const NOMBRES = { 1:'ases', 2:'tontos', 3:'trenes', 4:'cuadras', 5:'quinas', 6:'senas' };
 
   let cantidad = leer('cacho.cantidad', MAX, 0, MAX);
-  let reserva = leer('cacho.reserva', 0, 0, 99);   // dados ganados cazando con 5 (escudo)
+  let reserva = leer('cacho.reserva', 0, 0, 99);
   let valores = [];
   let estado = 'listo';   // listo | agitando | tapado | destapado | inicial
-  let ciega = false;      // ronda ciega: la inicia alguien que quedó con 1 dado
+  let ciega = false;
+  let alzado = 0;         // cuánto está levantado el vaso (px)
 
   function leer(k, def, min, max) {
     try { const v = parseInt(localStorage.getItem(k), 10); return v >= min && v <= max ? v : def; }
@@ -211,29 +289,35 @@
     try { localStorage.setItem('cacho.cantidad', cantidad); localStorage.setItem('cacho.reserva', reserva); } catch {}
   }
 
-  // Posiciones de los dados según cuántos hay (en % del área)
+  // ---------- Dados ----------
   const POS = {
-    1: [[36.5,36.5]],
-    2: [[18,36.5],[55,36.5]],
-    3: [[18,20],[55,20],[36.5,55]],
-    4: [[18,18],[55,18],[18,55],[55,55]],
-    5: [[8,12],[46,6],[66,38],[30,44],[10,72]].map(([x,y]) => [x+4, y+2]),
+    1: [[36, 32]],
+    2: [[14, 30], [58, 26]],
+    3: [[10, 8], [60, 4], [34, 56]],
+    4: [[12, 6], [58, 2], [14, 58], [56, 60]],
+    5: [[5, 4], [66, 0], [36, 30], [8, 62], [62, 60]],
   };
+  const PUNTO = (cx, cy, r, as) =>
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#${as ? 'pAs' : 'pN'})"/>`;
 
   function dibujarDados() {
     dadosEl.innerHTML = '';
     const pos = POS[valores.length] || [];
     valores.forEach((v, i) => {
       const d = document.createElement('div');
-      d.className = 'dado' + (v === 1 ? ' as' : '');
+      d.className = 'dado';
       const [x, y] = pos[i];
-      d.style.left = x + '%'; d.style.top = y + '%';
-      d.style.transform = `rotate(${Math.round(Math.random()*40 - 20)}deg)`;
-      const color = v === 1 ? 'var(--as)' : 'var(--punto)';
-      const r = v === 1 ? 15 : 10;
-      d.innerHTML = '<svg viewBox="0 0 100 100" width="100%" height="100%">' +
-        CARAS[v].map(c => `<circle cx="${22 + (c % 3) * 28}" cy="${22 + Math.floor(c / 3) * 28}" r="${r}" fill="${color}"/>`).join('') +
-        '</svg>';
+      d.style.left = (x + (rand() * 4 - 2)) + '%';
+      d.style.top = (y + (rand() * 4 - 2)) + '%';
+      d.style.transform = `rotate(${Math.round(rand() * 36 - 18)}deg)`;
+      const r = v === 1 ? 14 : 9.5;
+      d.innerHTML = `<svg viewBox="0 0 100 100">
+        <defs>
+          <radialGradient id="pN" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#555"/><stop offset=".45" stop-color="#151515"/><stop offset="1" stop-color="#000"/></radialGradient>
+          <radialGradient id="pAs" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ff7a70"/><stop offset=".45" stop-color="#b3261e"/><stop offset="1" stop-color="#5e0d08"/></radialGradient>
+        </defs>
+        ${CARAS[v].map(c => PUNTO(23 + (c % 3) * 27, 23 + Math.floor(c / 3) * 27, r, v === 1)).join('')}
+      </svg>`;
       dadosEl.appendChild(d);
     });
   }
@@ -242,67 +326,68 @@
 
   function textoResumen() {
     if (!valores.length) return '';
-    if (estado === 'inicial') return `Sacaste <em>${valores[0]}</em>`;
+    if (estado === 'inicial') return `Sacaste <em>${valores[0]}</em> · el más alto empieza`;
     const cuenta = {};
     valores.forEach(v => cuenta[v] = (cuenta[v] || 0) + 1);
-    let t = Object.keys(cuenta).sort((a,b) => a-b)
-      .map(k => k == 1 ? `<span>${cuenta[k]} ${cuenta[k] > 1 ? 'ases' : 'as'}</span>`
-                       : `${cuenta[k]} ${NOMBRES[k]}`)
+    let t = Object.keys(cuenta).sort((a, b) => a - b)
+      .map(k => k == 1 ? `<span>${cuenta[k]} ${cuenta[k] > 1 ? 'ases' : 'as'}</span>` : `${cuenta[k]} ${NOMBRES[k]}`)
       .join(' · ');
     if (tieneSalpicon()) t += ' · <em>¡Salpicón!</em>';
     return t;
   }
 
-  // ¿Puede este jugador mirar sus dados? En ronda ciega solo quien tiene 1 dado.
   const puedeMirar = () => !(ciega && cantidad > 1);
 
-  // Con el cacho puesto los dados no se dibujan, para que no se asome ninguna esquina.
-  // Al bajar el cacho se esconden cuando termina de taparlos.
-  let timerOcultar;
-  function ajustarVisibilidad() {
-    const tapados = estado === 'agitando' || (estado === 'tapado' && !cacho.classList.contains('levantado'));
-    clearTimeout(timerOcultar);
-    if (!tapados) dadosEl.style.visibility = '';
-    else if (estado === 'agitando') dadosEl.style.visibility = 'hidden';
-    else timerOcultar = setTimeout(() => { dadosEl.style.visibility = 'hidden'; }, 350);
-  }
-
+  // ---------- Pantalla ----------
   function actualizarUI() {
-    ajustarVisibilidad();
     const ocupado = estado === 'agitando';
+    const fuera = estado === 'destapado' || estado === 'inicial';
+    $('numBarra').textContent = cantidad;
+    $('resBarra').textContent = reserva ? `+${reserva}` : '';
     numEl.textContent = cantidad;
-    reservaEl.textContent = reserva ? `+${reserva} de reserva` : '';
+    nota.textContent = reserva ? `Tienes ${reserva} de reserva: la próxima vez que pierdas, sigues con ${cantidad}.` : '';
     btnMenos.disabled = (cantidad <= 0 && !reserva) || ocupado;
     btnMas.disabled = ocupado;
-    btnMas.setAttribute('aria-label', cantidad >= MAX ? 'Ganar un dado de reserva' : 'Agregar un dado');
     btnInicial.disabled = ocupado || cantidad === 0;
     btnCiega.disabled = ocupado || estado === 'tapado' || cantidad === 0;
     btnCiega.setAttribute('aria-pressed', ciega);
+
     eliminado.classList.toggle('visible', cantidad === 0);
     cacho.style.display = cantidad === 0 ? 'none' : '';
-    btnAgitar.disabled = cantidad === 0 || ocupado;
-    btnDestapar.disabled = estado !== 'tapado';
-    btnAgitar.textContent = estado === 'destapado' ? 'Nueva ronda' : 'Agitar';
-    cacho.classList.toggle('destapado', estado === 'destapado' || estado === 'inicial');
-    resumen.innerHTML = (estado === 'destapado' || estado === 'inicial' || cacho.classList.contains('levantado')) ? textoResumen() : '';
-    ayuda.textContent = {
-      listo: ciega ? (cantidad > 1 ? 'Ronda ciega: esta ronda no podrás ver tus dados' : 'Ronda ciega: con 1 dado sí puedes mirar el tuyo')
-                   : 'Toca «Agitar» o sacude el celular',
-      agitando: 'Agitando…',
-      tapado: puedeMirar() ? 'Mantén presionado el cacho para mirar tus dados'
-                           : 'Ronda ciega: no puedes mirar tus dados',
-      destapado: 'Dados a la vista de todos',
-      inicial: 'El dado más alto empieza. Si empatan, vuelven a tirar los empatados.',
+    cacho.classList.toggle('fuera', fuera);
+
+    btnDestapar.textContent = fuera ? 'Nueva ronda' : 'Destapar';
+    btnDestapar.disabled = !(estado === 'tapado' || fuera) || cantidad === 0;
+
+    placa.innerHTML = {
+      listo: ciega ? '<b>Agitar</b><small>Ronda ciega</small>' : '<b>Agitar</b><small>Toca o sacude el celular</small>',
+      agitando: '<b>· · ·</b><small>Agitando</small>',
+      tapado: puedeMirar() ? '<span class="flecha">▲</span><b>Mirar</b><small>Desliza el vaso hacia arriba</small>'
+                           : '<b>Ronda ciega</b><small>Esta ronda no ves tus dados</small>',
+      destapado: '', inicial: '',
     }[estado];
-    if (cantidad === 0) ayuda.textContent = '';
+
+    // Los dados solo existen a la vista cuando el vaso no los tapa
+    const visibles = fuera || (estado === 'tapado' && alzado > 4);
+    dadosEl.style.visibility = visibles ? '' : 'hidden';
+    const altoMesa = mesa.clientHeight;
+    resumen.innerHTML = textoResumen();
+    resumen.classList.toggle('visible', fuera || (estado === 'tapado' && alzado > altoMesa * 0.32));
   }
 
+  function moverVaso(px) {
+    alzado = px;
+    cacho.style.transform = px ? `translateY(${-px}px)` : '';
+    actualizarUI();
+  }
+
+  // ---------- Agitar ----------
   function agitar(n = cantidad, inicial = false) {
     if (cantidad === 0 || estado === 'agitando') return;
     estado = 'agitando';
-    cacho.classList.remove('levantado', 'destapado');
+    moverVaso(0);
+    cacho.classList.remove('fuera');
     cacho.classList.add('agitando');
-    dadosEl.style.visibility = 'hidden';
     vibrar([30, 40, 30, 40, 30, 40, 30]);
     sonidoAgitar();
     actualizarUI();
@@ -310,61 +395,81 @@
       valores = Array.from({ length: n }, () => 1 + Math.floor(rand() * 6));
       dibujarDados();
       cacho.classList.remove('agitando');
-      dadosEl.style.visibility = '';
       estado = inicial ? 'inicial' : 'tapado';
       vibrar(60);
       actualizarUI();
-    }, 900);
+    }, 1000);
   }
 
-  function rand() {
-    const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296;
-  }
+  function rand() { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
 
-  // Mirar: mantener presionado el cacho
-  function mirar(on) {
+  // ---------- Deslizar el vaso ----------
+  let inicioY = null, movio = false;
+  cacho.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    try { cacho.setPointerCapture(e.pointerId); } catch {}
+    inicioY = e.clientY; movio = false;
+    cacho.classList.add('arrastrando');
+  });
+  cacho.addEventListener('pointermove', e => {
+    if (inicioY === null) return;
+    const dy = inicioY - e.clientY;
+    if (Math.abs(dy) > 8) movio = true;
     if (estado !== 'tapado') return;
-    if (on && !puedeMirar()) { vibrar([20, 60, 20]); return; }
-    cacho.classList.toggle('levantado', on);
-    actualizarUI();
+    const max = mesa.clientHeight * 0.78;
+    if (!puedeMirar()) {               // ronda ciega: el vaso apenas se mueve
+      moverVaso(Math.max(0, Math.min(dy, 30)) * 0.4);
+      return;
+    }
+    let px = Math.max(0, dy);
+    if (px > max) px = max + (px - max) * 0.15;   // resistencia al final
+    moverVaso(px);
+  });
+  function soltar() {
+    if (inicioY === null) return;
+    inicioY = null;
+    cacho.classList.remove('arrastrando');
+    if (!movio && (estado === 'listo')) { pedirPermisoMovimiento(); agitar(); }
+    else if (!movio && estado === 'tapado' && !puedeMirar()) vibrar([20, 60, 20]);
+    if (alzado) moverVaso(0);
   }
-  cacho.addEventListener('pointerdown', e => { e.preventDefault(); try { cacho.setPointerCapture(e.pointerId); } catch {} mirar(true); });
-  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => cacho.addEventListener(ev, () => mirar(false)));
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => cacho.addEventListener(ev, soltar));
   cacho.addEventListener('contextmenu', e => e.preventDefault());
 
-  btnAgitar.addEventListener('click', () => { pedirPermisoMovimiento(); agitar(); });
-  btnInicial.addEventListener('click', () => { pedirPermisoMovimiento(); agitar(1, true); });
   btnDestapar.addEventListener('click', () => {
-    estado = 'destapado';
-    ciega = false;          // la ronda ciega aplica solo a la ronda que se acaba de jugar
-    vibrar(40); actualizarUI();
+    if (estado === 'tapado') {
+      estado = 'destapado';
+      ciega = false;            // la ronda ciega es solo para esa ronda
+      moverVaso(0);
+      vibrar(40); actualizarUI();
+    } else {                      // Nueva ronda
+      pedirPermisoMovimiento();
+      estado = 'listo'; actualizarUI();
+      setTimeout(() => agitar(), 420);
+    }
   });
-  btnCiega.addEventListener('click', () => { ciega = !ciega; actualizarUI(); });
-  btnMenos.addEventListener('click', () => perderDado());
-  btnMas.addEventListener('click', () => ganarDado());
-  btnNueva.addEventListener('click', () => { cantidad = MAX; reserva = 0; ciega = false; reiniciarMesa(); });
 
-  // Perder: primero se gasta la reserva (escudo); si no hay, se pierde un dado.
-  function perderDado() {
-    if (reserva > 0) reserva--;
-    else if (cantidad > 0) cantidad--;
-    reiniciarMesa();
-  }
-  // Ganar (cazar bien): con 5 dados no hay sexto dado, se guarda uno de reserva.
-  function ganarDado() {
-    if (cantidad >= MAX) reserva++;
-    else cantidad++;
-    reiniciarMesa();
-  }
+  // ---------- Menú ----------
+  function abrirMenu(si) { menu.classList.toggle('abierto', si); velo.classList.toggle('abierto', si); }
+  $('abrirMenu').addEventListener('click', () => abrirMenu(true));
+  $('abrirMenu2').addEventListener('click', () => abrirMenu(true));
+  $('cerrar').addEventListener('click', () => abrirMenu(false));
+  velo.addEventListener('click', () => abrirMenu(false));
+
+  btnMenos.addEventListener('click', () => { if (reserva > 0) reserva--; else if (cantidad > 0) cantidad--; reiniciarMesa(); });
+  btnMas.addEventListener('click', () => { if (cantidad >= MAX) reserva++; else cantidad++; reiniciarMesa(); });
+  btnNueva.addEventListener('click', () => { cantidad = MAX; reserva = 0; ciega = false; reiniciarMesa(); abrirMenu(false); });
+  btnCiega.addEventListener('click', () => { ciega = !ciega; actualizarUI(); });
+  btnInicial.addEventListener('click', () => { abrirMenu(false); pedirPermisoMovimiento(); agitar(1, true); });
+
   function reiniciarMesa() {
     guardar();
     valores = []; dadosEl.innerHTML = '';
     estado = 'listo';
-    cacho.classList.remove('levantado', 'destapado');
-    actualizarUI();
+    moverVaso(0);
   }
 
-  // Sacudir el celular para agitar
+  // ---------- Sacudir el celular ----------
   let permisoPedido = false, ultimaSacudida = 0;
   function pedirPermisoMovimiento() {
     if (permisoPedido) return;
@@ -383,30 +488,29 @@
       const fuerza = Math.hypot(a.x || 0, a.y || 0, a.z || 0);
       const umbral = e.acceleration ? 18 : 30;
       const ahora = Date.now();
-      if (fuerza > umbral && ahora - ultimaSacudida > 1500 && estado !== 'agitando' && estado !== 'tapado') {
+      if (fuerza > umbral && ahora - ultimaSacudida > 1500 && (estado === 'listo' || estado === 'destapado' || estado === 'inicial')) {
         ultimaSacudida = ahora; agitar();
       }
     });
   }
-  // En Android no hace falta permiso: escuchamos desde el primer toque
   document.addEventListener('pointerdown', pedirPermisoMovimiento, { once: true });
 
   function vibrar(p) { try { navigator.vibrate && navigator.vibrate(p); } catch {} }
 
-  // Sonido de dados dentro del cacho (generado, sin archivos)
+  // Sonido de dados dentro del vaso (generado, sin archivos)
   let audio;
   function sonidoAgitar() {
     try {
       audio = audio || new (window.AudioContext || window.webkitAudioContext)();
       const t0 = audio.currentTime;
-      for (let i = 0; i < 14; i++) {
-        const t = t0 + i * 0.06 + Math.random() * 0.03;
+      for (let i = 0; i < 15; i++) {
+        const t = t0 + i * 0.062 + Math.random() * 0.03;
         const len = 0.03;
         const buf = audio.createBuffer(1, Math.floor(audio.sampleRate * len), audio.sampleRate);
         const d = buf.getChannelData(0);
         for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / d.length, 3);
         const src = audio.createBufferSource(); src.buffer = buf;
-        const f = audio.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1800 + Math.random() * 1500; f.Q.value = 2;
+        const f = audio.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1500 + Math.random() * 1500; f.Q.value = 2;
         const g = audio.createGain(); g.gain.value = 0.5;
         src.connect(f).connect(g).connect(audio.destination);
         src.start(t);
@@ -414,6 +518,7 @@
     } catch {}
   }
 
+  window.addEventListener('resize', () => actualizarUI());
   actualizarUI();
 })();
 </script>
