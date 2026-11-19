@@ -64,12 +64,11 @@
   .cacho {
     position: absolute; left: -6%; right: -6%; top: -30%; bottom: 3%;
     z-index: 2; cursor: grab;
-    transform-origin: 50% 0%;
     transition: transform .42s cubic-bezier(.3,1.2,.5,1);
     will-change: transform;
   }
   .cacho.arrastrando { transition: none; cursor: grabbing; }
-  .cacho.fuera { transform: translateY(-62%) rotateX(-78deg) !important; opacity: 0; transition: transform .6s cubic-bezier(.5,0,.3,1), opacity .25s .35s; }
+  .cacho.fuera { transform: rotateX(80deg) !important; opacity: 0; transition: transform .6s cubic-bezier(.5,0,.3,1), opacity .25s .35s; }
   .cacho.agitando .cuerpo { animation: agitar .085s linear infinite alternate; }
   @keyframes agitar {
     from { transform: translate(-1.5%, 0) rotate(-1.4deg); }
@@ -387,16 +386,17 @@
     resumen.classList.toggle('visible', fuera || (estado === 'tapado' && alzado > altoMesa * 0.32));
   }
 
-  // El vaso se levanta inclinándose hacia atrás, como cuando uno lo abre de verdad:
-  // el borde de adelante sube y el vaso gira sobre el lado de atrás.
+  // El vaso gira sobre el borde de ATRÁS, que se queda apoyado en la mesa:
+  // el eje pasa por la base del vaso, a un diámetro detrás del borde de adelante.
+  // Así el borde de adelante sube y el vaso se inclina hacia atrás, como en la vida real.
+  function diametro() { return cacho.clientWidth * 0.85; }
+  function ajustarEje() { cacho.style.transformOrigin = `50% 100% ${-diametro()}px`; }
   function moverVaso(px) {
     alzado = px;
     if (!px) { cacho.style.transform = ''; actualizarUI(); return; }
-    const max = mesa.clientHeight * 0.6;
-    const p = Math.min(px / max, 1.15);
-    const giro = 70 * p;                 // grados hacia atrás
-    const sube = px * 0.35;              // además sube un poco
-    cacho.style.transform = `translateY(${-sube}px) rotateX(${-giro}deg)`;
+    // el borde de adelante sube diametro·sen(giro): el giro sigue al dedo
+    const giro = Math.asin(Math.min(px / diametro(), 0.97)) * 180 / Math.PI;
+    cacho.style.transform = `rotateX(${giro}deg)`;
     actualizarUI();
   }
 
@@ -563,7 +563,8 @@
     } catch {}
   }
 
-  window.addEventListener('resize', () => actualizarUI());
+  window.addEventListener('resize', () => { ajustarEje(); actualizarUI(); });
+  ajustarEje();
   actualizarUI();
 })();
 </script>
