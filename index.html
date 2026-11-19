@@ -3,105 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0f0a06">
+<meta name="theme-color" content="#0c2a1b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Cacho</title>
 <style>
   :root {
-    --pano: #1d5a3a;
-    --pano-oscuro: #0c2a1b;
     --oro: #d8b46a;
     --oro-oscuro: #9c7a36;
     --texto: #f4efe3;
     --texto-suave: #c9c2b2;
-    --as: #b3261e;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; }
   body {
-    background: #0f0a06;
-    color: var(--texto);
+    background: #0c2a1b; color: var(--texto);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     overflow: hidden; overscroll-behavior: none;
-    user-select: none; -webkit-user-select: none;
-    touch-action: none;
+    user-select: none; -webkit-user-select: none; touch-action: none;
   }
-
-  /* ---------- Mesa ---------- */
-  .mesa {
-    position: fixed; inset: 0; overflow: hidden;
-    perspective: 1100px; perspective-origin: 50% 20%;
-    background:
-      radial-gradient(ellipse 90% 55% at 50% 78%, #2a7a50 0%, var(--pano) 40%, var(--pano-oscuro) 100%);
-  }
-  .mesa::after { /* textura de paño */
-    content: ""; position: absolute; inset: 0; opacity: .18; pointer-events: none;
-    background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.25) 0 1px, transparent 1px 3px);
-  }
-
-  /* ---------- Dados ---------- */
-  .dados {
-    position: absolute; left: 50%; bottom: 9%;
-    width: min(92vw, 420px); height: min(72vw, 330px);
-    transform: translateX(-50%);
-    z-index: 1;
-  }
-  .dado {
-    position: absolute; width: 28%; aspect-ratio: 1;
-    border-radius: 22%;
-    background: linear-gradient(150deg, #ffffff 0%, #f1ede5 45%, #d6cfc2 100%);
-    box-shadow:
-      inset -5px -7px 10px rgba(0,0,0,.20),
-      inset 4px 4px 7px rgba(255,255,255,.95),
-      0 3px 0 #b9b1a2,
-      0 14px 18px rgba(0,0,0,.45);
-  }
-  .dado svg { display: block; width: 100%; height: 100%; }
-
-  /* ---------- Cacho (vaso) ---------- */
-  .cacho {
-    position: absolute; left: -6%; right: -6%; top: -30%; bottom: 3%;
-    z-index: 2; cursor: grab;
-    transition: transform .42s cubic-bezier(.3,1.2,.5,1);
-    will-change: transform;
-  }
-  .cacho.arrastrando { transition: none; cursor: grabbing; }
-  .cacho.fuera { transform: rotateX(80deg) !important; opacity: 0; transition: transform .6s cubic-bezier(.5,0,.3,1), opacity .25s .35s; }
-  .cacho.agitando .cuerpo { animation: agitar .085s linear infinite alternate; }
-  @keyframes agitar {
-    from { transform: translate(-1.5%, 0) rotate(-1.4deg); }
-    to   { transform: translate(1.5%, -.6%) rotate(1.4deg); }
-  }
-  .cuerpo { position: absolute; inset: 0; }
-  .cuerpo svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .sombra {
-    position: absolute; left: 4%; right: 4%; bottom: -3%; height: 9%;
-    background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,.65), transparent 70%);
-    z-index: -1;
-  }
-
-  /* Placa en el centro del vaso */
-  .placa {
-    position: absolute; left: 50%; top: 60%; transform: translate(-50%, -50%);
-    min-width: 190px; padding: 14px 26px; border-radius: 16px;
-    background: linear-gradient(180deg, #e9cd8c 0%, var(--oro) 45%, var(--oro-oscuro) 100%);
-    color: #2b1b07; text-align: center;
-    box-shadow: inset 0 2px 0 rgba(255,255,255,.55), inset 0 -3px 0 rgba(0,0,0,.25), 0 6px 14px rgba(0,0,0,.5);
-    border: 1px solid #6e5222;
-  }
-  .placa b { display: block; font-size: 26px; letter-spacing: 3px; text-transform: uppercase; }
-  .placa small { display: block; font-size: 13px; font-weight: 600; opacity: .8; margin-top: 2px; }
-  .flecha { display: block; font-size: 22px; line-height: 1; margin-bottom: 2px; animation: subir 1.4s ease-in-out infinite; }
-  @keyframes subir { 0%,100% { transform: translateY(3px); opacity: .5; } 50% { transform: translateY(-4px); opacity: 1; } }
+  #escena { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 
   /* ---------- Barra superior ---------- */
   .barra {
     position: fixed; left: 0; right: 0; top: 0; z-index: 5;
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    padding: max(14px, env(safe-area-inset-top)) 16px 0;
-    pointer-events: none;
+    padding: max(14px, env(safe-area-inset-top)) 16px 0; pointer-events: none;
   }
   .barra > * { pointer-events: auto; }
   .pastilla, .icono {
@@ -114,29 +42,33 @@
   .pastilla .res { font-size: 12px; color: #1b3a22; background: #9fd4a8; border-radius: 10px; padding: 2px 7px; }
   .pastilla .res:empty { display: none; }
   .icono { width: 44px; display: grid; place-items: center; padding: 0; }
-  .destapar {
+  .boton-oro {
     height: 48px; padding: 0 22px; border-radius: 14px; border: 1px solid #6e5222;
     background: linear-gradient(180deg, #e9cd8c 0%, var(--oro) 45%, var(--oro-oscuro) 100%);
     color: #2b1b07; font-size: 16px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
-    box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 4px 10px rgba(0,0,0,.45);
-    cursor: pointer;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 4px 10px rgba(0,0,0,.45); cursor: pointer;
   }
-  .destapar:disabled { filter: grayscale(.8) brightness(.55); }
+  .boton-oro:disabled { filter: grayscale(.8) brightness(.55); }
 
-  /* Resumen de lo que tienes */
+  /* ---------- Textos sobre la mesa ---------- */
+  .pista {
+    position: fixed; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); z-index: 4;
+    transform: translateX(-50%); width: max-content; max-width: calc(100vw - 32px);
+    text-align: center; font-size: 15px; font-weight: 600; color: var(--texto);
+    text-shadow: 0 1px 4px rgba(0,0,0,.8); pointer-events: none;
+  }
+  .pista .flecha { display: inline-block; animation: subir 1.4s ease-in-out infinite; margin-right: 6px; }
+  @keyframes subir { 0%,100% { transform: translateY(3px); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
   .resumen {
-    position: fixed; left: 50%; z-index: 4;
-    bottom: calc(9% + min(72vw, 330px) + 10px);
-    transform: translateX(-50%);
-    padding: 8px 14px; border-radius: 14px;
-    width: max-content; max-width: calc(100vw - 32px); text-align: center; line-height: 1.4;
+    position: fixed; left: 50%; bottom: calc(max(22px, env(safe-area-inset-bottom)) + 34px); z-index: 4;
+    transform: translateX(-50%); width: max-content; max-width: calc(100vw - 32px);
+    padding: 8px 14px; border-radius: 14px; text-align: center; line-height: 1.4;
     background: rgba(10,6,3,.72); font-size: 15px; font-weight: 600;
     opacity: 0; transition: opacity .2s; pointer-events: none;
   }
   .resumen.visible { opacity: 1; }
   .resumen span { color: #ff8a80; font-weight: 800; }
   .resumen em { font-style: normal; font-weight: 800; color: var(--oro); }
-
   .aviso {
     position: fixed; left: 50%; top: calc(max(14px, env(safe-area-inset-top)) + 58px); z-index: 7;
     transform: translate(-50%, -8px); opacity: 0; transition: opacity .2s, transform .2s;
@@ -145,14 +77,21 @@
     font-size: 14px; font-weight: 600; pointer-events: none;
   }
   .aviso.visible { opacity: 1; transform: translate(-50%, 0); }
+  .cargando, .eliminado {
+    position: fixed; inset: 0; z-index: 3; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 16px;
+    pointer-events: none;
+  }
+  .eliminado { display: none; }
+  .eliminado.visible { display: flex; }
+  .eliminado big { font-size: 30px; font-weight: 800; }
 
   /* ---------- Menú ---------- */
   .velo { position: fixed; inset: 0; z-index: 8; background: rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: opacity .2s; }
   .velo.abierto { opacity: 1; pointer-events: auto; }
   .menu {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 9;
-    background: #1b130c; border-top: 1px solid rgba(255,255,255,.12);
-    border-radius: 22px 22px 0 0;
+    background: #1b130c; border-top: 1px solid rgba(255,255,255,.12); border-radius: 22px 22px 0 0;
     padding: 18px 16px max(18px, env(safe-area-inset-bottom));
     transform: translateY(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
     max-width: 520px; margin: 0 auto;
@@ -173,82 +112,28 @@
     height: 50px; border-radius: 14px; border: 1px solid rgba(255,255,255,.18);
     background: rgba(255,255,255,.06); color: var(--texto); font-size: 15px; font-weight: 700; cursor: pointer;
   }
+  .acciones button:disabled { opacity: .35; }
   .acciones button[aria-pressed="true"] { background: var(--oro); color: #2b1b07; border-color: var(--oro); }
-  .acciones .ancho { grid-column: 1 / -1; }
-
-  /* Sin dados */
-  .eliminado {
-    position: fixed; inset: 0; z-index: 3; display: none;
-    flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 16px;
-  }
-  .eliminado.visible { display: flex; }
-  .eliminado big { font-size: 30px; font-weight: 800; }
 </style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
 </head>
 <body>
-<div class="mesa" id="mesa">
-  <div class="dados" id="dados"></div>
-
-  <div class="cacho" id="cacho">
-    <div class="cuerpo">
-      <svg viewBox="0 0 400 1000" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="cuero" x1="0" x2="1">
-            <stop offset="0" stop-color="#0b0603"/>
-            <stop offset=".18" stop-color="#2a170b"/>
-            <stop offset=".38" stop-color="#4a2c17"/>
-            <stop offset=".52" stop-color="#35200f"/>
-            <stop offset=".85" stop-color="#170c05"/>
-            <stop offset="1" stop-color="#070302"/>
-          </linearGradient>
-          <linearGradient id="labio" x1="0" x2="1">
-            <stop offset="0" stop-color="#070302"/>
-            <stop offset=".35" stop-color="#3b2312"/>
-            <stop offset=".6" stop-color="#26160a"/>
-            <stop offset="1" stop-color="#050201"/>
-          </linearGradient>
-          <linearGradient id="vertical" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#000" stop-opacity=".55"/>
-            <stop offset=".35" stop-color="#000" stop-opacity="0"/>
-            <stop offset=".85" stop-color="#000" stop-opacity="0"/>
-            <stop offset="1" stop-color="#000" stop-opacity=".35"/>
-          </linearGradient>
-          <linearGradient id="brillo" x1="0" x2="1">
-            <stop offset="0" stop-color="#fff" stop-opacity="0"/>
-            <stop offset=".5" stop-color="#fff" stop-opacity=".10"/>
-            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        <!-- cuerpo -->
-        <path d="M0 0 H400 V900 A200 80 0 0 1 0 900 Z" fill="url(#cuero)"/>
-        <path d="M0 0 H400 V900 A200 80 0 0 1 0 900 Z" fill="url(#vertical)"/>
-        <!-- franja de brillo -->
-        <rect x="105" y="0" width="70" height="960" fill="url(#brillo)"/>
-        <!-- costuras -->
-        <path d="M0 300 A200 60 0 0 0 400 300" fill="none" stroke="#d8b46a" stroke-width="3" stroke-dasharray="14 10" opacity=".55" vector-effect="non-scaling-stroke"/>
-        <path d="M0 820 A200 75 0 0 0 400 820" fill="none" stroke="#d8b46a" stroke-width="3" stroke-dasharray="14 10" opacity=".7" vector-effect="non-scaling-stroke"/>
-        <!-- labio del vaso -->
-        <path d="M0 862 A200 80 0 0 0 400 862 V900 A200 80 0 0 1 0 900 Z" fill="url(#labio)"/>
-        <path d="M0 900 A200 80 0 0 0 400 900" fill="none" stroke="#000" stroke-width="2" opacity=".7" vector-effect="non-scaling-stroke"/>
-        <path d="M2 864 A198 78 0 0 0 398 864" fill="none" stroke="#7a5332" stroke-width="1.5" opacity=".6" vector-effect="non-scaling-stroke"/>
-      </svg>
-      <div class="sombra"></div>
-      <div class="placa" id="placa"></div>
-    </div>
-  </div>
-</div>
+<canvas id="escena"></canvas>
+<div class="cargando" id="cargando">Cargando la mesa…</div>
 
 <div class="resumen" id="resumen"></div>
+<div class="pista" id="pista"></div>
 <div class="aviso" id="aviso" role="status"></div>
-
-<div class="eliminado" id="eliminado">
-  <big>Sin dados</big>
-  <span>Quedaste eliminado.</span>
-</div>
+<div class="eliminado" id="eliminado"><big>Sin dados</big><span>Quedaste eliminado.</span></div>
 
 <div class="barra">
   <button class="pastilla" id="abrirMenu" aria-label="Tus dados y opciones"><span id="numBarra">5</span> dados <span class="res" id="resBarra"></span></button>
-  <button class="destapar" id="destapar" disabled>Destapar</button>
+  <button class="boton-oro" id="destapar" disabled>Destapar</button>
   <button class="icono" id="abrirMenu2" aria-label="Opciones">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
@@ -272,301 +157,482 @@
   </div>
 </div>
 
-<script>
-(() => {
-  const MAX = 5;
-  const $ = id => document.getElementById(id);
-  const mesa = $('mesa'), cacho = $('cacho'), dadosEl = $('dados'), placa = $('placa'), resumen = $('resumen');
-  const btnDestapar = $('destapar'), eliminado = $('eliminado');
-  const menu = $('menu'), velo = $('velo');
-  const btnMenos = $('menos'), btnMas = $('mas'), numEl = $('num'), nota = $('nota');
-  const btnInicial = $('inicial'), btnCiega = $('ciega'), btnNueva = $('nueva');
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
-  const CARAS = { 1:[4], 2:[2,6], 3:[2,4,6], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
-  const NOMBRES = { 1:'ases', 2:'tontos', 3:'trenes', 4:'cuadras', 5:'quinas', 6:'senas' };
+const MAX = 5;
+const $ = id => document.getElementById(id);
+const canvas = $('escena'), resumen = $('resumen'), pista = $('pista');
+const btnDestapar = $('destapar'), eliminado = $('eliminado'), menu = $('menu'), velo = $('velo');
+const btnMenos = $('menos'), btnMas = $('mas'), numEl = $('num'), nota = $('nota');
+const btnInicial = $('inicial'), btnCiega = $('ciega'), btnNueva = $('nueva');
 
-  let cantidad = leer('cacho.cantidad', MAX, 0, MAX);
-  let reserva = leer('cacho.reserva', 0, 0, 99);
-  let valores = [];
-  let estado = 'listo';   // listo | agitando | tapado | destapado | inicial
-  let ciega = false;
-  let alzado = 0;         // cuánto está levantado el vaso (px)
+const NOMBRES = { 1: 'ases', 2: 'patos', 3: 'trenes', 4: 'cuadras', 5: 'quinas', 6: 'senas' };
+const NOMBRE1 = { 1: 'as', 2: 'pato', 3: 'tren', 4: 'cuadra', 5: 'quina', 6: 'sena' };
 
-  function leer(k, def, min, max) {
-    try { const v = parseInt(localStorage.getItem(k), 10); return v >= min && v <= max ? v : def; }
-    catch { return def; }
+let cantidad = leer('cacho.cantidad', MAX, 0, MAX);
+let reserva = leer('cacho.reserva', 0, 0, 99);
+let valores = [];
+let estado = 'listo';   // listo | agitando | tapado | destapado | inicial
+let ciega = false;
+
+function leer(k, def, min, max) {
+  try { const v = parseInt(localStorage.getItem(k), 10); return v >= min && v <= max ? v : def; }
+  catch { return def; }
+}
+function guardar() {
+  try { localStorage.setItem('cacho.cantidad', cantidad); localStorage.setItem('cacho.reserva', reserva); } catch {}
+}
+function rand() { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
+
+// =====================================================================
+// Escena 3D
+// =====================================================================
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#08180f');
+scene.fog = new THREE.Fog('#08180f', 16, 34);
+const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+
+// Luces
+scene.add(new THREE.HemisphereLight('#fff6e6', '#0b2416', 0.55));
+const foco = new THREE.SpotLight('#fff1d6', 260, 40, Math.PI / 5, 0.55, 1.6);
+foco.position.set(-3, 13, 5);
+foco.target.position.set(0, 0, 0.5);
+foco.castShadow = true;
+foco.shadow.mapSize.set(1024, 1024);
+foco.shadow.bias = -0.0004;
+foco.shadow.radius = 6;
+scene.add(foco, foco.target);
+const relleno = new THREE.DirectionalLight('#cfe3ff', 0.35);
+relleno.position.set(5, 6, 8);
+scene.add(relleno);
+
+// ---------- Texturas generadas (sin archivos) ----------
+function lienzo(w, h, dibujar) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  dibujar(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+function ruido(g, w, h, n, alpha, claro) {
+  for (let i = 0; i < n; i++) {
+    g.fillStyle = (Math.random() < .5 ? (claro || '#ffffff') : '#000000');
+    g.globalAlpha = Math.random() * alpha;
+    g.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 2, 1 + Math.random() * 2);
   }
-  function guardar() {
-    try { localStorage.setItem('cacho.cantidad', cantidad); localStorage.setItem('cacho.reserva', reserva); } catch {}
-  }
+  g.globalAlpha = 1;
+}
 
-  // ---------- Dados ----------
-  const POS = {
-    1: [[36, 32]],
-    2: [[14, 30], [58, 26]],
-    3: [[10, 8], [60, 4], [34, 56]],
-    4: [[12, 6], [58, 2], [14, 58], [56, 60]],
-    5: [[5, 4], [66, 0], [36, 30], [8, 62], [62, 60]],
+// Paño de la mesa
+const texPano = lienzo(512, 512, (g, w, h) => {
+  g.fillStyle = '#1f6a43'; g.fillRect(0, 0, w, h);
+  ruido(g, w, h, 26000, .10);
+});
+texPano.wrapS = texPano.wrapT = THREE.RepeatWrapping;
+texPano.repeat.set(10, 10);
+const mesa = new THREE.Mesh(
+  new THREE.PlaneGeometry(60, 60),
+  new THREE.MeshStandardMaterial({ map: texPano, roughness: 1 })
+);
+mesa.rotation.x = -Math.PI / 2;
+mesa.receiveShadow = true;
+scene.add(mesa);
+
+// ---------- El vaso (cacho) ----------
+const R = 2.35;          // radio de la boca
+const ALTO = 3.3;
+// Perfil del vaso: de la boca (abajo) a la tapa (arriba)
+const perfil = [];
+const N = 44;
+perfil.push(new THREE.Vector2(R - 0.04, 0));
+for (let i = 0; i <= N; i++) {
+  const t = i / N, y = 0.04 + t * (ALTO - 0.3);
+  let r = R - 0.42 * t;                         // se angosta hacia arriba
+  if (y < 0.32) r += 0.07;                       // refuerzo de la boca
+  perfil.push(new THREE.Vector2(r, y));
+}
+for (let i = 1; i <= 8; i++) {                   // tapa redondeada
+  const a = (i / 8) * Math.PI / 2, rTop = R - 0.42;
+  perfil.push(new THREE.Vector2(0.28 + (rTop - 0.28) * Math.cos(a), ALTO - 0.26 + 0.24 * Math.sin(a)));
+}
+perfil.push(new THREE.Vector2(0, ALTO - 0.01));
+const vDe = idx => idx / (perfil.length - 1);   // coordenada v de la textura para un punto del perfil
+const idxAltura = y => 1 + Math.round(((y - 0.04) / (ALTO - 0.3)) * N);
+
+const texCuero = lienzo(1024, 1024, (g, w, h) => {
+  const grd = g.createLinearGradient(0, 0, 0, h);
+  grd.addColorStop(0, '#241309'); grd.addColorStop(1, '#3d2414');
+  g.fillStyle = grd; g.fillRect(0, 0, w, h);
+  ruido(g, w, h, 60000, .09, '#c08a5a');
+  // vetas
+  g.globalAlpha = .12; g.strokeStyle = '#0d0603';
+  for (let i = 0; i < 90; i++) { g.lineWidth = .5 + Math.random(); g.beginPath(); const y = Math.random() * h; g.moveTo(0, y); g.bezierCurveTo(w * .3, y + 8, w * .6, y - 8, w, y + Math.random() * 6); g.stroke(); }
+  g.globalAlpha = 1;
+  // costuras a dos alturas
+  const costura = y => {
+    const py = (1 - vDe(idxAltura(y))) * h;
+    g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 7; g.beginPath(); g.moveTo(0, py); g.lineTo(w, py); g.stroke();
+    g.setLineDash([16, 10]); g.strokeStyle = '#e0bd76'; g.lineWidth = 4;
+    g.beginPath(); g.moveTo(0, py); g.lineTo(w, py); g.stroke(); g.setLineDash([]);
   };
-  const PUNTO = (cx, cy, r, as) =>
-    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#${as ? 'pAs' : 'pN'})"/>`;
+  costura(0.55); costura(2.55);
+  // banda de la boca un poco más oscura
+  const pyBoca = (1 - vDe(idxAltura(0.3))) * h;
+  g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(0, pyBoca, w, h - pyBoca);
+});
+const matCuero = new THREE.MeshStandardMaterial({ map: texCuero, bumpMap: texCuero, bumpScale: 0.02, roughness: 0.62, metalness: 0.05 });
+const exterior = new THREE.Mesh(new THREE.LatheGeometry(perfil, 96), matCuero);
+exterior.castShadow = true;
 
-  function dibujarDados() {
-    dadosEl.innerHTML = '';
-    const pos = POS[valores.length] || [];
-    valores.forEach((v, i) => {
-      const d = document.createElement('div');
-      d.className = 'dado';
-      const [x, y] = pos[i];
-      d.style.left = (x + (rand() * 4 - 2)) + '%';
-      d.style.top = (y + (rand() * 4 - 2)) + '%';
-      d.style.transform = `rotate(${Math.round(rand() * 36 - 18)}deg)`;
-      const r = v === 1 ? 14 : 9.5;
-      d.innerHTML = `<svg viewBox="0 0 100 100">
-        <defs>
-          <radialGradient id="pN" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#555"/><stop offset=".45" stop-color="#151515"/><stop offset="1" stop-color="#000"/></radialGradient>
-          <radialGradient id="pAs" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ff7a70"/><stop offset=".45" stop-color="#b3261e"/><stop offset="1" stop-color="#5e0d08"/></radialGradient>
-        </defs>
-        ${CARAS[v].map(c => PUNTO(23 + (c % 3) * 27, 23 + Math.floor(c / 3) * 27, r, v === 1)).join('')}
-      </svg>`;
-      dadosEl.appendChild(d);
+// Interior oscuro (se ve cuando el vaso se inclina)
+const perfilInt = perfil.map(p => new THREE.Vector2(Math.max(0, p.x - 0.09), Math.max(0, p.y - 0.05)));
+const interior = new THREE.Mesh(
+  new THREE.LatheGeometry(perfilInt, 96),
+  new THREE.MeshStandardMaterial({ color: '#160b05', roughness: 0.9, side: THREE.BackSide })
+);
+// Canto de la boca
+const canto = new THREE.Mesh(
+  new THREE.RingGeometry(R - 0.09 + 0.07, R + 0.03 + 0.07, 96, 1),
+  new THREE.MeshStandardMaterial({ color: '#2a170b', roughness: 0.8, side: THREE.DoubleSide })
+);
+canto.rotation.x = -Math.PI / 2;
+canto.position.y = 0.005;
+
+// El vaso cuelga de un pivote ubicado en el borde de ATRÁS de la boca, sobre la mesa.
+// Al girar el pivote, ese borde se queda apoyado y el de adelante sube.
+const pivote = new THREE.Group();
+pivote.position.set(0, 0, -(R + 0.07));
+const vaso = new THREE.Group();
+vaso.position.set(0, 0, R + 0.07);
+vaso.add(exterior, interior, canto);
+pivote.add(vaso);
+scene.add(pivote);
+
+// ---------- Dados ----------
+const CARAS = { 1: [4], 2: [2, 6], 3: [2, 4, 6], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+const texCara = {};
+for (let v = 1; v <= 6; v++) {
+  texCara[v] = lienzo(256, 256, (g, w, h) => {
+    const grd = g.createLinearGradient(0, 0, w, h);
+    grd.addColorStop(0, '#ffffff'); grd.addColorStop(1, '#ebe5da');
+    g.fillStyle = grd; g.fillRect(0, 0, w, h);
+    ruido(g, w, h, 1500, .03);
+    const as = v === 1, r = as ? 34 : 23;
+    CARAS[v].forEach(c => {
+      const x = 52 + (c % 3) * 76, y = 52 + Math.floor(c / 3) * 76;
+      const pg = g.createRadialGradient(x - r * .35, y - r * .35, r * .1, x, y, r);
+      if (as) { pg.addColorStop(0, '#ff6a5e'); pg.addColorStop(.5, '#b3261e'); pg.addColorStop(1, '#4a0905'); }
+      else { pg.addColorStop(0, '#5a5a5a'); pg.addColorStop(.45, '#141414'); pg.addColorStop(1, '#000'); }
+      g.fillStyle = pg; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
     });
+  });
+}
+const matCara = {};
+for (let v = 1; v <= 6; v++) matCara[v] = new THREE.MeshStandardMaterial({ map: texCara[v], roughness: 0.32, metalness: 0 });
+const LADO = 0.82;
+const geoDado = new RoundedBoxGeometry(LADO, LADO, LADO, 5, 0.12);
+
+// Orden de caras del cubo en three: +x, -x, +y, -y, +z, -z. Arriba (+y) va el valor.
+function materialesPara(v) {
+  const resto = [1, 2, 3, 4, 5, 6].filter(n => n !== v && n !== 7 - v);
+  const a = resto[0], b = resto.find(n => n !== a && n !== 7 - a);
+  return [matCara[a], matCara[7 - a], matCara[v], matCara[7 - v], matCara[b], matCara[7 - b]];
+}
+
+const POS = {
+  1: [[0, 0.1]],
+  2: [[-0.62, 0.05], [0.62, 0.1]],
+  3: [[-0.7, -0.45], [0.72, -0.4], [0, 0.65]],
+  4: [[-0.68, -0.62], [0.68, -0.66], [-0.66, 0.66], [0.7, 0.62]],
+  5: [[-0.95, -0.72], [0.92, -0.8], [0, 0.0], [-0.9, 0.86], [0.95, 0.82]],
+};
+const grupoDados = new THREE.Group();
+scene.add(grupoDados);
+function ponerDados() {
+  grupoDados.clear();
+  const pos = POS[valores.length] || [];
+  valores.forEach((v, i) => {
+    const d = new THREE.Mesh(geoDado, materialesPara(v));
+    const [x, z] = pos[i];
+    d.position.set(x + (rand() - .5) * .16, LADO / 2, z + (rand() - .5) * .16);
+    d.rotation.y = (rand() - .5) * 1.2;
+    d.castShadow = true; d.receiveShadow = true;
+    grupoDados.add(d);
+  });
+}
+
+// ---------- Cámara: mirando la mesa desde adelante y arriba ----------
+function encuadrar() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  const vfov = THREE.MathUtils.degToRad(camera.fov);
+  const hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
+  const ancho = (R + 0.2) * 2 * 0.98;                     // el vaso llena el ancho
+  let d = (ancho / 2) / Math.tan(hfov / 2);
+  d = Math.max(d, 9);
+  const dir = new THREE.Vector3(0, 1.0, 0.9).normalize();
+  const mira = new THREE.Vector3(0, 1.15, -0.1);
+  camera.position.copy(mira).addScaledVector(dir, d);
+  camera.lookAt(mira);
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', encuadrar);
+encuadrar();
+
+// =====================================================================
+// Movimiento del vaso
+// =====================================================================
+let giro = 0, giroObjetivo = 0, vel = 0;   // grados hacia atrás
+let arrastrando = false, inicioY = 0, giroInicio = 0, movio = false;
+let agitarHasta = 0;
+const GIRO_MAX = 78, GIRO_FUERA = 95;
+let salida = 0;   // 0 = en la mesa, 1 = el vaso se fue fuera de la pantalla
+
+const puedeMirar = () => !(ciega && cantidad > 1);
+const fuera = () => estado === 'destapado' || estado === 'inicial';
+
+canvas.addEventListener('pointerdown', e => {
+  if (cantidad === 0) return;
+  try { canvas.setPointerCapture(e.pointerId); } catch {}
+  arrastrando = true; movio = false; inicioY = e.clientY; giroInicio = giro;
+});
+canvas.addEventListener('pointermove', e => {
+  if (!arrastrando) return;
+  const dy = inicioY - e.clientY;
+  if (Math.abs(dy) > 8) movio = true;
+  if (estado !== 'tapado') return;
+  const tope = puedeMirar() ? GIRO_MAX : 4;
+  // el borde de adelante sigue al dedo
+  const g = giroInicio + (dy / innerHeight) * 150;
+  giroObjetivo = Math.max(0, Math.min(tope, g));
+  giro = giroObjetivo; vel = 0;
+  actualizarUI();
+});
+function soltar() {
+  if (!arrastrando) return;
+  arrastrando = false;
+  if (!movio && estado === 'listo') agitar();
+  else if (!movio && estado === 'tapado' && !puedeMirar()) vibrar([20, 60, 20]);
+  if (estado === 'tapado') giroObjetivo = 0;   // al soltar, el vaso cae
+  actualizarUI();
+}
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => canvas.addEventListener(ev, soltar));
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+let ultimo = performance.now(), yaGolpeo = true;
+function cuadro(ahora) {
+  const dt = Math.min(0.05, (ahora - ultimo) / 1000); ultimo = ahora;
+  if (!arrastrando) {
+    // resorte con un pequeño rebote al caer sobre la mesa
+    const k = giroObjetivo === 0 ? 210 : 90, amort = giroObjetivo === 0 ? 17 : 14;
+    vel += ((giroObjetivo - giro) * k - vel * amort) * dt;
+    giro += vel * dt;
+    if (giro < 0) {                       // golpe contra la mesa
+      giro = -giro * 0.25; vel = -vel * 0.25;
+      if (!yaGolpeo && Math.abs(vel) > 4) { vibrar(15); }
+      yaGolpeo = true;
+    }
+    if (giro > 6) yaGolpeo = false;
+  }
+  pivote.rotation.x = -THREE.MathUtils.degToRad(giro);
+  // Al destapar del todo, el vaso se levanta y se va hacia atrás, fuera de la vista
+  const salidaObjetivo = fuera() ? 1 : 0;
+  salida += (salidaObjetivo - salida) * Math.min(1, dt * (salidaObjetivo ? 3.2 : 8));
+  pivote.position.set(0, salida * 4.5, -(R + 0.07) - salida * 9);
+
+  // Agitar: el vaso se sacude sobre la mesa
+  if (ahora < agitarHasta) {
+    const t = ahora / 1000;
+    vaso.position.x = Math.sin(t * 47) * 0.12;
+    vaso.position.z = (R + 0.07) + Math.cos(t * 39) * 0.1;
+    vaso.position.y = Math.abs(Math.sin(t * 31)) * 0.12;
+    vaso.rotation.z = Math.sin(t * 43) * 0.05;
+  } else {
+    vaso.position.set(0, 0, R + 0.07); vaso.rotation.z = 0;
   }
 
-  const tieneSalpicon = () => valores.length === 5 && new Set(valores).size === 5;
+  const visible = fuera() || giro > 30;
+  resumen.classList.toggle('visible', visible && estado !== 'agitando');
 
-  function textoResumen() {
-    if (!valores.length) return '';
-    if (estado === 'inicial') return `Sacaste <em>${valores[0]}</em> · el más alto empieza`;
-    const cuenta = {};
-    valores.forEach(v => cuenta[v] = (cuenta[v] || 0) + 1);
-    let t = Object.keys(cuenta).sort((a, b) => a - b)
-      .map(k => k == 1 ? `<span>${cuenta[k]} ${cuenta[k] > 1 ? 'ases' : 'as'}</span>` : `${cuenta[k]} ${NOMBRES[k]}`)
-      .join(' · ');
-    if (tieneSalpicon()) t += ' · <em>¡Salpicón!</em>';
-    return t;
-  }
+  renderer.render(scene, camera);
+  requestAnimationFrame(cuadro);
+}
+requestAnimationFrame(cuadro);
+$('cargando').remove();
 
-  const puedeMirar = () => !(ciega && cantidad > 1);
+// =====================================================================
+// Juego
+// =====================================================================
+const tieneSalpicon = () => valores.length === 5 && new Set(valores).size === 5;
 
-  // ---------- Pantalla ----------
-  function actualizarUI() {
-    const ocupado = estado === 'agitando';
-    const fuera = estado === 'destapado' || estado === 'inicial';
-    $('numBarra').textContent = cantidad;
-    $('resBarra').textContent = reserva ? `+${reserva}` : '';
-    numEl.textContent = cantidad;
-    nota.textContent = reserva ? `Tienes ${reserva} de reserva: la próxima vez que pierdas, sigues con ${cantidad}.` : '';
-    btnMenos.disabled = (cantidad <= 0 && !reserva) || ocupado;
-    btnMas.disabled = ocupado;
-    btnInicial.disabled = ocupado || cantidad === 0;
-    btnCiega.disabled = ocupado || estado === 'tapado' || cantidad === 0;
-    btnCiega.setAttribute('aria-pressed', ciega);
+function textoResumen() {
+  if (!valores.length) return '';
+  if (estado === 'inicial') return `Sacaste <em>${valores[0]}</em> · el más alto empieza`;
+  const cuenta = {};
+  valores.forEach(v => cuenta[v] = (cuenta[v] || 0) + 1);
+  let t = Object.keys(cuenta).sort((a, b) => a - b)
+    .map(k => { const n = `${cuenta[k]} ${cuenta[k] > 1 ? NOMBRES[k] : NOMBRE1[k]}`; return k == 1 ? `<span>${n}</span>` : n; })
+    .join(' · ');
+  if (tieneSalpicon()) t += ' · <em>¡Salpicón!</em>';
+  return t;
+}
 
-    eliminado.classList.toggle('visible', cantidad === 0);
-    cacho.style.display = cantidad === 0 ? 'none' : '';
-    cacho.classList.toggle('fuera', fuera);
+function actualizarUI() {
+  const ocupado = estado === 'agitando';
+  $('numBarra').textContent = cantidad;
+  $('resBarra').textContent = reserva ? `+${reserva}` : '';
+  numEl.textContent = cantidad;
+  nota.textContent = reserva ? `Tienes ${reserva} de reserva: la próxima vez que pierdas, sigues con ${cantidad}.` : '';
+  btnMenos.disabled = (cantidad <= 0 && !reserva) || ocupado;
+  btnMas.disabled = ocupado;
+  btnInicial.disabled = ocupado || cantidad === 0;
+  btnCiega.disabled = ocupado || estado === 'tapado' || cantidad === 0;
+  btnCiega.setAttribute('aria-pressed', ciega);
 
-    btnDestapar.textContent = fuera ? 'Nueva ronda' : 'Destapar';
-    btnDestapar.disabled = !(estado === 'tapado' || fuera) || cantidad === 0;
+  eliminado.classList.toggle('visible', cantidad === 0);
+  pivote.visible = cantidad > 0;
 
-    placa.innerHTML = {
-      listo: ciega ? '<b>Agitar</b><small>Ronda ciega</small>' : '<b>Agitar</b><small>Toca o sacude el celular</small>',
-      agitando: '<b>· · ·</b><small>Agitando</small>',
-      tapado: puedeMirar() ? '<span class="flecha">▲</span><b>Mirar</b><small>Desliza el vaso hacia arriba</small>'
-                           : '<b>Ronda ciega</b><small>Esta ronda no ves tus dados</small>',
-      destapado: '', inicial: '',
-    }[estado];
+  btnDestapar.textContent = fuera() ? 'Nueva ronda' : 'Destapar';
+  btnDestapar.disabled = !(estado === 'tapado' || fuera()) || cantidad === 0;
 
-    // Los dados solo existen a la vista cuando el vaso no los tapa
-    const visibles = fuera || (estado === 'tapado' && alzado > 4);
-    dadosEl.style.visibility = visibles ? '' : 'hidden';
-    const altoMesa = mesa.clientHeight;
-    resumen.innerHTML = textoResumen();
-    resumen.classList.toggle('visible', fuera || (estado === 'tapado' && alzado > altoMesa * 0.32));
-  }
+  resumen.innerHTML = textoResumen();
+  pista.innerHTML = cantidad === 0 ? '' : {
+    listo: ciega ? 'Ronda ciega · toca el vaso o sacude el celular' : 'Toca el vaso o sacude el celular para agitar',
+    agitando: 'Agitando…',
+    tapado: puedeMirar() ? '<span class="flecha">▲</span>Desliza hacia arriba para mirar tus dados'
+                         : 'Ronda ciega: esta ronda no ves tus dados',
+    destapado: 'Dados a la vista de todos',
+    inicial: 'El más alto empieza · si empatan, vuelven a tirar',
+  }[estado];
+}
 
-  // El vaso gira sobre el borde de ATRÁS, que se queda apoyado en la mesa:
-  // el eje pasa por la base del vaso, a un diámetro detrás del borde de adelante.
-  // Así el borde de adelante sube y el vaso se inclina hacia atrás, como en la vida real.
-  function diametro() { return cacho.clientWidth * 0.85; }
-  function ajustarEje() { cacho.style.transformOrigin = `50% 100% ${-diametro()}px`; }
-  function moverVaso(px) {
-    alzado = px;
-    if (!px) { cacho.style.transform = ''; actualizarUI(); return; }
-    // el borde de adelante sube diametro·sen(giro): el giro sigue al dedo
-    const giro = Math.asin(Math.min(px / diametro(), 0.97)) * 180 / Math.PI;
-    cacho.style.transform = `rotateX(${giro}deg)`;
-    actualizarUI();
-  }
-
-  // ---------- Agitar ----------
-  function agitar(n = cantidad, inicial = false) {
-    if (cantidad === 0 || estado === 'agitando') return;
+function agitar(n = cantidad, inicial = false) {
+  if (cantidad === 0 || estado === 'agitando') return;
+  const empezar = () => {
     estado = 'agitando';
-    moverVaso(0);
-    cacho.classList.remove('fuera');
-    cacho.classList.add('agitando');
+    agitarHasta = performance.now() + 1000;
     vibrar([30, 40, 30, 40, 30, 40, 30]);
     sonidoAgitar();
     actualizarUI();
     setTimeout(() => {
       valores = Array.from({ length: n }, () => 1 + Math.floor(rand() * 6));
-      dibujarDados();
-      cacho.classList.remove('agitando');
+      ponerDados();
       estado = inicial ? 'inicial' : 'tapado';
+      if (inicial) giroObjetivo = GIRO_FUERA;
       vibrar(60);
       actualizarUI();
     }, 1000);
+  };
+  // Si el vaso está levantado, primero baja y después se agita
+  if (giro > 3) { giroObjetivo = 0; estado = 'listo'; actualizarUI(); setTimeout(empezar, 450); }
+  else empezar();
+}
+
+btnDestapar.addEventListener('click', () => {
+  if (estado === 'tapado') {
+    estado = 'destapado'; ciega = false;       // la ronda ciega es solo para esa ronda
+    giroObjetivo = GIRO_FUERA;
+    vibrar(40); actualizarUI();
+  } else if (fuera()) {
+    agitar();
   }
+});
 
-  function rand() { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
+// ---------- Menú ----------
+function abrirMenu(si) { menu.classList.toggle('abierto', si); velo.classList.toggle('abierto', si); }
+$('abrirMenu').addEventListener('click', () => abrirMenu(true));
+$('abrirMenu2').addEventListener('click', () => abrirMenu(true));
+$('cerrar').addEventListener('click', () => abrirMenu(false));
+velo.addEventListener('click', () => abrirMenu(false));
+btnMenos.addEventListener('click', () => { if (reserva > 0) reserva--; else if (cantidad > 0) cantidad--; reiniciarMesa(); });
+btnMas.addEventListener('click', () => { if (cantidad >= MAX) reserva++; else cantidad++; reiniciarMesa(); });
+btnNueva.addEventListener('click', () => { cantidad = MAX; reserva = 0; ciega = false; reiniciarMesa(); abrirMenu(false); });
+btnCiega.addEventListener('click', () => { ciega = !ciega; actualizarUI(); });
+btnInicial.addEventListener('click', () => { abrirMenu(false); agitar(1, true); });
 
-  // ---------- Deslizar el vaso ----------
-  let inicioY = null, movio = false;
-  cacho.addEventListener('pointerdown', e => {
-    e.preventDefault();
-    try { cacho.setPointerCapture(e.pointerId); } catch {}
-    inicioY = e.clientY; movio = false;
-    cacho.classList.add('arrastrando');
-  });
-  cacho.addEventListener('pointermove', e => {
-    if (inicioY === null) return;
-    const dy = inicioY - e.clientY;
-    if (Math.abs(dy) > 8) movio = true;
-    if (estado !== 'tapado') return;
-    const max = mesa.clientHeight * 0.6;
-    if (!puedeMirar()) {               // ronda ciega: el vaso apenas se mueve
-      moverVaso(Math.max(0, Math.min(dy, 30)) * 0.4);
-      return;
-    }
-    let px = Math.max(0, dy);
-    if (px > max) px = max + (px - max) * 0.15;   // resistencia al final
-    moverVaso(px);
-  });
-  function soltar() {
-    if (inicioY === null) return;
-    inicioY = null;
-    cacho.classList.remove('arrastrando');
-    if (!movio && (estado === 'listo')) agitar();
-    else if (!movio && estado === 'tapado' && !puedeMirar()) vibrar([20, 60, 20]);
-    if (alzado) moverVaso(0);
-  }
-  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => cacho.addEventListener(ev, soltar));
-  cacho.addEventListener('contextmenu', e => e.preventDefault());
-
-  btnDestapar.addEventListener('click', () => {
-    if (estado === 'tapado') {
-      estado = 'destapado';
-      ciega = false;            // la ronda ciega es solo para esa ronda
-      moverVaso(0);
-      vibrar(40); actualizarUI();
-    } else {                      // Nueva ronda
-      pedirPermisoMovimiento();
-      estado = 'listo'; actualizarUI();
-      setTimeout(() => agitar(), 420);
-    }
-  });
-
-  // ---------- Menú ----------
-  function abrirMenu(si) { menu.classList.toggle('abierto', si); velo.classList.toggle('abierto', si); }
-  $('abrirMenu').addEventListener('click', () => abrirMenu(true));
-  $('abrirMenu2').addEventListener('click', () => abrirMenu(true));
-  $('cerrar').addEventListener('click', () => abrirMenu(false));
-  velo.addEventListener('click', () => abrirMenu(false));
-
-  btnMenos.addEventListener('click', () => { if (reserva > 0) reserva--; else if (cantidad > 0) cantidad--; reiniciarMesa(); });
-  btnMas.addEventListener('click', () => { if (cantidad >= MAX) reserva++; else cantidad++; reiniciarMesa(); });
-  btnNueva.addEventListener('click', () => { cantidad = MAX; reserva = 0; ciega = false; reiniciarMesa(); abrirMenu(false); });
-  btnCiega.addEventListener('click', () => { ciega = !ciega; actualizarUI(); });
-  btnInicial.addEventListener('click', () => { abrirMenu(false); pedirPermisoMovimiento(); agitar(1, true); });
-
-  function reiniciarMesa() {
-    guardar();
-    valores = []; dadosEl.innerHTML = '';
-    estado = 'listo';
-    moverVaso(0);
-  }
-
-  // ---------- Sacudir el celular ----------
-  // iPhone solo deja pedir el permiso dentro de un toque completo (click/touchend),
-  // no en pointerdown. Si el permiso no se dio, se vuelve a pedir en el siguiente toque.
-  let escuchando = false, pidiendo = false, ultimaSacudida = 0, golpes = [];
-  function pedirPermisoMovimiento() {
-    if (escuchando || pidiendo) return;
-    const DME = window.DeviceMotionEvent;
-    if (!DME) return;
-    if (typeof DME.requestPermission === 'function') {
-      pidiendo = true;
-      DME.requestPermission()
-        .then(r => {
-          if (r === 'granted') { escucharMovimiento(); aviso('Sacudir activado: agita el celular para revolver'); }
-          else aviso('Sin permiso de movimiento: usa el botón Agitar');
-        })
-        .catch(() => {})
-        .finally(() => { pidiendo = false; });
-    } else {
-      escucharMovimiento();
-    }
-  }
-  function escucharMovimiento() {
-    if (escuchando) return;
-    escuchando = true;
-    window.addEventListener('devicemotion', e => {
-      let f;
-      if (e.acceleration && e.acceleration.x !== null) {
-        const a = e.acceleration; f = Math.hypot(a.x, a.y, a.z);             // sin gravedad
-      } else if (e.accelerationIncludingGravity) {
-        const a = e.accelerationIncludingGravity; f = Math.abs(Math.hypot(a.x, a.y, a.z) - 9.8);
-      } else return;
-      const ahora = Date.now();
-      // Una sacudida = dos o más golpes fuertes en menos de medio segundo
-      if (f > 11) golpes.push(ahora);
-      golpes = golpes.filter(t => ahora - t < 500);
-      const sePuede = estado === 'listo' || estado === 'destapado' || estado === 'inicial'
-                   || (estado === 'tapado' && inicioY === null && !alzado);
-      if (golpes.length >= 2 && ahora - ultimaSacudida > 1500 && sePuede && !menu.classList.contains('abierto')) {
-        ultimaSacudida = ahora; golpes = []; agitar();
-      }
-    });
-  }
-  ['click', 'touchend'].forEach(ev => document.addEventListener(ev, pedirPermisoMovimiento));
-
-  let timerAviso;
-  function aviso(txt) {
-    const el = $('aviso');
-    el.textContent = txt; el.classList.add('visible');
-    clearTimeout(timerAviso);
-    timerAviso = setTimeout(() => el.classList.remove('visible'), 2600);
-  }
-
-  function vibrar(p) { try { navigator.vibrate && navigator.vibrate(p); } catch {} }
-
-  // Sonido de dados dentro del vaso (generado, sin archivos)
-  let audio;
-  function sonidoAgitar() {
-    try {
-      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-      const t0 = audio.currentTime;
-      for (let i = 0; i < 15; i++) {
-        const t = t0 + i * 0.062 + Math.random() * 0.03;
-        const len = 0.03;
-        const buf = audio.createBuffer(1, Math.floor(audio.sampleRate * len), audio.sampleRate);
-        const d = buf.getChannelData(0);
-        for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / d.length, 3);
-        const src = audio.createBufferSource(); src.buffer = buf;
-        const f = audio.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1500 + Math.random() * 1500; f.Q.value = 2;
-        const g = audio.createGain(); g.gain.value = 0.5;
-        src.connect(f).connect(g).connect(audio.destination);
-        src.start(t);
-      }
-    } catch {}
-  }
-
-  window.addEventListener('resize', () => { ajustarEje(); actualizarUI(); });
-  ajustarEje();
+function reiniciarMesa() {
+  guardar();
+  valores = []; grupoDados.clear();
+  estado = 'listo'; giroObjetivo = 0;
   actualizarUI();
-})();
+}
+
+// ---------- Sacudir el celular ----------
+// iPhone solo deja pedir el permiso dentro de un toque completo (click/touchend).
+let escuchando = false, pidiendo = false, negado = false, ultimaSacudida = 0, golpes = [];
+function pedirPermisoMovimiento() {
+  if (escuchando || pidiendo || negado) return;
+  const DME = window.DeviceMotionEvent;
+  if (!DME) return;
+  if (typeof DME.requestPermission === 'function') {
+    pidiendo = true;
+    DME.requestPermission()
+      .then(r => {
+        if (r === 'granted') { escucharMovimiento(); aviso('Sacudir activado: agita el celular para revolver'); }
+        else { negado = true; aviso('Sin permiso de movimiento: toca el vaso para agitar'); }
+      })
+      .catch(() => {})
+      .finally(() => { pidiendo = false; });
+  } else escucharMovimiento();
+}
+function escucharMovimiento() {
+  if (escuchando) return;
+  escuchando = true;
+  addEventListener('devicemotion', e => {
+    let f;
+    if (e.acceleration && e.acceleration.x !== null) { const a = e.acceleration; f = Math.hypot(a.x, a.y, a.z); }
+    else if (e.accelerationIncludingGravity) { const a = e.accelerationIncludingGravity; f = Math.abs(Math.hypot(a.x, a.y, a.z) - 9.8); }
+    else return;
+    const ahora = Date.now();
+    if (f > 11) golpes.push(ahora);
+    golpes = golpes.filter(t => ahora - t < 500);
+    const sePuede = estado === 'listo' || fuera() || (estado === 'tapado' && !arrastrando && giro < 2);
+    if (golpes.length >= 2 && ahora - ultimaSacudida > 1500 && sePuede && !menu.classList.contains('abierto')) {
+      ultimaSacudida = ahora; golpes = []; agitar();
+    }
+  });
+}
+['click', 'touchend'].forEach(ev => document.addEventListener(ev, pedirPermisoMovimiento));
+
+let timerAviso;
+function aviso(txt) {
+  const el = $('aviso'); el.textContent = txt; el.classList.add('visible');
+  clearTimeout(timerAviso); timerAviso = setTimeout(() => el.classList.remove('visible'), 2600);
+}
+function vibrar(p) { try { navigator.vibrate && navigator.vibrate(p); } catch {} }
+
+// Sonido de dados dentro del vaso (generado)
+let audio;
+function sonidoAgitar() {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = audio.currentTime;
+    for (let i = 0; i < 15; i++) {
+      const t = t0 + i * 0.062 + Math.random() * 0.03, len = 0.03;
+      const buf = audio.createBuffer(1, Math.floor(audio.sampleRate * len), audio.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / d.length, 3);
+      const src = audio.createBufferSource(); src.buffer = buf;
+      const f = audio.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1500 + Math.random() * 1500; f.Q.value = 2;
+      const g = audio.createGain(); g.gain.value = 0.5;
+      src.connect(f).connect(g).connect(audio.destination); src.start(t);
+    }
+  } catch {}
+}
+
+actualizarUI();
 </script>
 </body>
 </html>
