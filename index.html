@@ -256,7 +256,19 @@
   // ¿Puede este jugador mirar sus dados? En ronda ciega solo quien tiene 1 dado.
   const puedeMirar = () => !(ciega && cantidad > 1);
 
+  // Con el cacho puesto los dados no se dibujan, para que no se asome ninguna esquina.
+  // Al bajar el cacho se esconden cuando termina de taparlos.
+  let timerOcultar;
+  function ajustarVisibilidad() {
+    const tapados = estado === 'agitando' || (estado === 'tapado' && !cacho.classList.contains('levantado'));
+    clearTimeout(timerOcultar);
+    if (!tapados) dadosEl.style.visibility = '';
+    else if (estado === 'agitando') dadosEl.style.visibility = 'hidden';
+    else timerOcultar = setTimeout(() => { dadosEl.style.visibility = 'hidden'; }, 350);
+  }
+
   function actualizarUI() {
+    ajustarVisibilidad();
     const ocupado = estado === 'agitando';
     numEl.textContent = cantidad;
     reservaEl.textContent = reserva ? `+${reserva} de reserva` : '';
